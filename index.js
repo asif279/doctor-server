@@ -21,8 +21,19 @@ async function run(){
     const appointment=client.db('doctor').collection('treatment');
     const book=client.db('doctor').collection('booked');
     app.get('/treatment',async(req,res)=>{
+      const datee=req.query.datee;
+      console.log(datee);
         const query={};
         const option =await appointment.find(query).toArray();
+        const bookingQuery= { appointDate:datee}
+        const alreadyBook=await book.find(bookingQuery).toArray();
+        option.forEach(open=>{
+          const optionBooked=alreadyBook.filter(book=>book.treatment===open.name);
+          const bookSlot=optionBooked.map(booki=>booki.slot);
+          const remaining= open.slots.filter(slot=>!bookSlot.includes(slot));
+          open.slots=remaining;
+          console.log(datee,open.name,remaining.length)
+        })
         res.send(option);
 
     })
@@ -30,6 +41,17 @@ async function run(){
     app.post('/booked',async(req,res)=>{
       const booking=req.body;
       console.log(booking);
+      const query={
+        appointDate:booking.appointDate,
+        treatment:booking.treatment,
+        email:booking.email
+
+      }
+      const alredy=await book.find(query).toArray();
+      if(alredy.length){
+        const message=`You have already booking on ${booking.appointDate}`;
+        return res.send({acknowledged:false,message})
+      }
       const result =await book.insertOne(booking);
       res.send(result);
     })
