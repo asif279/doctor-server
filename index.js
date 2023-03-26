@@ -20,6 +20,7 @@ async function run(){
   try{
     const appointment=client.db('doctor').collection('treatment');
     const book=client.db('doctor').collection('booked');
+    const UserBook=client.db('doctor').collection('user');
     app.get('/treatment',async(req,res)=>{
       const datee=req.query.datee;
       console.log(datee);
@@ -36,6 +37,16 @@ async function run(){
         })
         res.send(option);
 
+    });
+
+    app.get('/booked',async(req,res)=>{
+      const email=req.query.email;
+      console.log(email);
+      const query={
+        email:email
+      }
+      const bookings=await book.find(query).toArray();
+      res.send(bookings);
     })
 
     app.post('/booked',async(req,res)=>{
@@ -53,6 +64,12 @@ async function run(){
         return res.send({acknowledged:false,message})
       }
       const result =await book.insertOne(booking);
+      res.send(result);
+    });
+
+    app.post('/users',async(req,res)=>{
+      const user=req.body;
+      const result=await UserBook.insertOne(user);
       res.send(result);
     })
 
