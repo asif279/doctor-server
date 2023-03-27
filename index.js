@@ -1,4 +1,5 @@
-const express = require('express')
+const express = require('express');
+const jwt = require('jsonwebtoken');
 
 const cors = require('cors');
 require('dotenv').config()
@@ -66,6 +67,21 @@ async function run(){
       const result =await book.insertOne(booking);
       res.send(result);
     });
+
+
+    app.get('/jwt',async(req,res)=>{
+      const email=req.query.email;
+      console.log(email);
+      const query={
+        email:email
+      }
+      const user=await UserBook.find(query).toArray();
+      if(user){
+        const token=jwt.sign({email},process.env.ACCESS_TOKEN,{expiresIn:'1h'})
+        return res.send({accesToken:token})
+      }
+      res.status(403).send({accesToken:''});
+    })
 
     app.post('/users',async(req,res)=>{
       const user=req.body;
