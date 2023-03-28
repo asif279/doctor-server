@@ -16,7 +16,15 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 
 console.log(uri);
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+function verifyJWT(req,res,next){
+  const autHeader=req.headers.authorization;
+  if(!autHeader){
+    return res.send(401).send('Unauthorized Acess');
+  }
 
+  const token=autHeader.split(' ')[1];
+
+}
 async function run(){
   try{
     const appointment=client.db('doctor').collection('treatment');
@@ -50,7 +58,7 @@ async function run(){
       res.send(bookings);
     })
 
-    app.post('/booked',async(req,res)=>{
+    app.post('/booked',verifyJWT,async(req,res)=>{
       const booking=req.body;
       console.log(booking);
       const query={
