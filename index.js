@@ -19,10 +19,17 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 function verifyJWT(req,res,next){
   const autHeader=req.headers.authorization;
   if(!autHeader){
-    return res.send(401).send('Unauthorized Acess');
+    return res.status(401).send('Unauthorized Acess');
   }
 
   const token=autHeader.split(' ')[1];
+  jwt.verify(token,process.env.ACCESS_TOKEN,function(err,decoded){
+    if(err){
+      res.status(403).send({message:"Forbidden Access"})
+    }
+    req.decoded=decoded;
+    next()
+  })
 
 }
 async function run(){
@@ -60,6 +67,11 @@ async function run(){
 
     app.post('/booked',verifyJWT,async(req,res)=>{
       const booking=req.body;
+
+      const decodedEmail=req.decoded.email;
+      if(email!=decodedEmail){
+        return res.status(403).send({message:'Forbiddden Access'})
+      }
       console.log(booking);
       const query={
         appointDate:booking.appointDate,
