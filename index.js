@@ -11,6 +11,7 @@ const port = 5000
 
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const { query } = require('express');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.gdmv2qb.mongodb.net/?retryWrites=true&w=majority`;
 
 
@@ -101,6 +102,12 @@ async function run(){
         return res.send({accesToken:token})
       }
       res.status(403).send({accesToken:''});
+    });
+
+    app.get('/user',async(req,res)=>{
+      const query={};
+      const result=await UserBook.find(query).toArray();
+      res.send(result);
     })
 
     app.post('/users',async(req,res)=>{
