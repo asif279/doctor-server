@@ -10,7 +10,7 @@ app.use(express.json())
 const port = 5000
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { query } = require('express');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.gdmv2qb.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -114,6 +114,25 @@ async function run(){
       const user=req.body;
       const result=await UserBook.insertOne(user);
       res.send(result);
+    });
+
+    app.put('/user/admin/:id',verifyJWT,async(req,res)=>{
+      const decodedEmail=req.decoded.email;
+      const query={email:decodedEmail}
+      const user=await UserBook.findOne(query);
+      if(user.role!=='admin'){
+        return res.status(403).send({message:'Forbidden Access'})
+      }
+      const id=req.params.id;
+      const filter={_id:new ObjectId(id)}
+      const options={upsert:true};
+      const updateDoc={
+        $set:{
+          role:'admin'
+        }
+      }
+      const result=await UserBook.updateOne(filter,updateDoc,options);
+      res.send(result)
     })
 
   }
