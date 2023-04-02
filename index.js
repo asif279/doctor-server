@@ -108,6 +108,14 @@ async function run(){
       const query={};
       const result=await UserBook.find(query).toArray();
       res.send(result);
+    });
+
+    app.get('/user/admin/:email',verifyJWT,async(req,res)=>{
+      //const id=req.params.id;
+      const email=req.params.email;
+      const query={email}
+      const user=await UserBook.find(query);
+      res.send({isAdmin:user?.role==='admin'})
     })
 
     app.post('/users',async(req,res)=>{
